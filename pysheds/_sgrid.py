@@ -1942,30 +1942,45 @@ def _priority_flood(dem, dem_mask, tuple_type):
     open_cells = typedlist.List.empty_list(tuple_type)  # Priority queue
     pits = typedlist.List.empty_list(tuple_type)  # FIFO queue
     closed_cells = dem_mask.copy()
-    isertn = count()
+    isertn = 0  # Replaces itertools.count()
 
     # Push the edges onto priority queue
     y, x = dem.shape
 
     edge = _left(dem_mask)[:-1]
-    for row, col in zip(count(), edge):
+    for i in range(len(edge)):
+        row = i
+        col = edge[i]
         if col >= 0:
-            open_cells.append((dem[row, col], next(isertn), row, col))
+            open_cells.append((dem[row, col], isertn, row, col))
+            isertn += 1
             closed_cells[row, col] = True
+
     edge = _bottom(dem_mask)[:-1]
-    for row, col in zip(edge, count()):
+    for i in range(len(edge)):
+        row = edge[i]
+        col = i
         if row >= 0:
-            open_cells.append((dem[row, col], next(isertn), row, col))
+            open_cells.append((dem[row, col], isertn, row, col))
+            isertn += 1
             closed_cells[row, col] = True
+
     edge = np.flip(_right(dem_mask))[:-1]
-    for row, col in zip(count(y - 1, step=-1), edge):
+    for i in range(len(edge)):
+        row = y - 1 - i
+        col = edge[i]
         if col >= 0:
-            open_cells.append((dem[row, col], next(isertn), row, col))
+            open_cells.append((dem[row, col], isertn, row, col))
+            isertn += 1
             closed_cells[row, col] = True
+
     edge = np.flip(_top(dem_mask))[:-1]
-    for row, col in zip(edge, count(x - 1, step=-1)):
+    for i in range(len(edge)):
+        row = edge[i]
+        col = x - 1 - i
         if row >= 0:
-            open_cells.append((dem[row, col], next(isertn), row, col))
+            open_cells.append((dem[row, col], isertn, row, col))
+            isertn += 1
             closed_cells[row, col] = True
     heapify(open_cells)
 
@@ -1992,9 +2007,11 @@ def _priority_flood(dem, dem_mask, tuple_type):
 
             if dem[row, col] <= elv:
                 dem[row, col] = elv
-                pits.append((elv, next(isertn), row, col))
+                pits.append((elv, isertn, row, col))
+                isertn += 1
             else:
-                heappush(open_cells, (dem[row, col], next(isertn), row, col))
+                heappush(open_cells, (dem[row, col], isertn, row, col))
+                isertn += 1
             closed_cells[row, col] = True
 
         # pits book-keeping
